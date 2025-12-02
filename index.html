@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>You have a message!</title>
+    <link href="https://fonts.googleapis.com/css2?family=Dancing+Script:wght@400;700&family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --envelope-color: #ff6b6b;
+            --envelope-flap-color: #ff5252;
+            --envelope-inside: #ff8787;
+            --paper-color: #fdf6e3;
+            --text-color: #4a4a4a;
+        }
+
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            background-color: #ffe3e3;
+            margin: 0;
+            font-family: 'Poppins', sans-serif;
+            overflow: hidden; /* Prevent scrolling when letter pops up */
+        }
+
+        .container {
+            position: relative;
+            width: 300px;
+            height: 200px;
+            cursor: pointer;
+        }
+
+        /* Message to tap */
+        .tap-instruction {
+            position: absolute;
+            bottom: -50px;
+            width: 100%;
+            text-align: center;
+            color: #ff5252;
+            font-weight: 600;
+            opacity: 1;
+            transition: opacity 0.5s;
+            animation: bounce 2s infinite;
+        }
+
+        .container.open .tap-instruction {
+            opacity: 0;
+        }
+
+        @keyframes bounce {
+            0%, 20%, 50%, 80%, 100% {transform: translateY(0);}
+            40% {transform: translateY(-10px);}
+            60% {transform: translateY(-5px);}
+        }
+
+        /* Envelope Body */
+        .envelope {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            background-color: var(--envelope-inside);
+            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
+            border-radius: 5px;
+            z-index: 1;
+        }
+
+        /* Front Flaps (Left and Right) */
+        .envelope::before {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-bottom: 100px solid var(--envelope-color);
+            z-index: 3;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .envelope::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 150px solid var(--envelope-flap-color);
+            border-top: 100px solid transparent;
+            border-bottom: 100px solid transparent;
+            z-index: 2;
+            border-radius: 5px 0 0 5px;
+        }
+        
+        .right-flap {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 0;
+            height: 0;
+            border-right: 150px solid var(--envelope-flap-color);
+            border-top: 100px solid transparent;
+            border-bottom: 100px solid transparent;
+            z-index: 2;
+            border-radius: 0 5px 5px 0;
+        }
+
+        /* Top Flap (The part that opens) */
+        .flap {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 0;
+            height: 0;
+            border-left: 150px solid transparent;
+            border-right: 150px solid transparent;
+            border-top: 110px solid var(--envelope-flap-color); /* Slightly longer to overlap */
+            transform-origin: top;
+            transition: transform 0.6s ease-in-out 0.4s, z-index 0.2s 0.4s; /* Added z-index transition */
+            z-index: 4;
+            border-radius: 5px 5px 0 0;
+        }
+
+        /* Open State Animations */
+        .container.open .flap {
+            transform: rotateX(180deg);
+            z-index: 1; /* Moves behind the letter when open */
+            transition: transform 0.6s ease-in-out, z-index 0.2s 0.2s; /* Adjust timing */
+        }
+
+        /* The Letter */
+        .letter {
+            position: absolute;
+            top: 10px;
+            left: 15px;
+            width: 270px;
+            height: 180px;
+            background-color: var(--paper-color);
+            border-radius: 5px;
+            padding: 20px;
+            box-sizing: border-box;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+            transition: all 0.6s ease-in-out;
+            z-index: 2;
+            overflow: hidden; /* Hide text initially */
+            display: flex;
+            flex-direction: column;
+            font-family: 'Dancing Script', cursive;
+            font-size: 14px;
+            color: var(--text-color);
+            line-height: 1.4;
+        }
+
+        .container.open .letter {
+            transform: translateY(-150px);
+            height: 480px; /* Expands to show full content */
+            z-index: 5;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            overflow-y: auto; /* Scroll if content is too long on small screens */
+            transition: transform 0.6s ease-in-out 0.6s, height 0.6s ease-in-out 0.6s, z-index 0s 0.6s;
+        }
+        
+        /* Custom scrollbar for letter */
+        .letter::-webkit-scrollbar {
+            width: 6px;
+        }
+        .letter::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .letter::-webkit-scrollbar-thumb {
+            background-color: rgba(0,0,0,0.1);
+            border-radius: 3px;
+        }
+
+        /* Letter Content Styles */
+        .letter-header {
+            text-align: right;
+            font-size: 0.9em;
+            margin-bottom: 15px;
+            color: #888;
+        }
+        
+        .letter-salutation {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+        
+        .letter-body {
+            margin-bottom: 15px;
+        }
+        
+        .letter-signature {
+            text-align: right;
+            margin-top: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .ref-box {
+            margin-top: 15px;
+            padding: 10px;
+            border: 1px dashed #ccc;
+            background: rgba(255,255,255,0.5);
+            text-align: center;
+            border-radius: 5px;
+            font-family: 'Poppins', sans-serif;
+            font-size: 10px;
+        }
+
+        .ref-icon {
+            font-size: 24px;
+            margin-bottom: 5px;
+        }
+
+        /* Sparkle decoration */
+        .sparkle {
+            position: absolute;
+            pointer-events: none;
+            background: white;
+            border-radius: 50%;
+            animation: twinkle 1.5s infinite ease-in-out;
+        }
+
+        @keyframes twinkle {
+            0%, 100% { opacity: 0; transform: scale(0.5); }
+            50% { opacity: 1; transform: scale(1.2); }
+        }
+
+        /* Overlay to close */
+        .overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: 0;
+            display: none;
+        }
+        .container.open + .overlay {
+            display: block;
+        }
+
+    </style>
+</head>
+<body>
+
+    <div class="container" id="envelope" onclick="toggleEnvelope()">
+        <div class="envelope">
+            <div class="right-flap"></div> <!-- Added explicit right flap for layering -->
+            <div class="flap"></div>
+            <div class="letter">
+                <div class="letter-header">12/01/2025</div>
+                <div class="letter-salutation">To whom it may concern,</div>
+                
+                <div class="letter-body">
+                    <p>May chismis ako. Halin sa sangka reliable source, nag open up kuno si princess lady glitter sparkles (see ref. a). nga gina corner kuno imaw it anang mga barkada mismo, na para bang gina on purpose nandang na left out ag gina literal nga bara.</p>
+                    
+                    <p>Coming from thy realiable source-sogon. Inamin na man nga actually gina ano gidman nanda, gina away away kasi kuno bulok man anang treatment kanda.</p>
+                    
+                    <p>Siin ka kuno kakita bukon man anang kwarta pang bakae it pagkaon pero abo anang nabuoe ag honestly napansin ko man don. Gina corner eon nanda imaw [kaeuoy man (nga bukon HAHA dsurv)].</p>
+                </div>
+
+                <div class="letter-signature">
+                    To yours truly,<br>
+                    AWIHIHIHIHI
+                </div>
+
+                <div class="ref-box">
+                    <div class="ref-icon">✨👹✨</div>
+                    <strong>Reference A:</strong><br>
+                    Princess Lady Glitter Sparkles
+                </div>
+            </div>
+        </div>
+        <div class="tap-instruction">✨ Tap me to open ✨</div>
+    </div>
+    <div class="overlay" onclick="toggleEnvelope()"></div>
+
+    <script>
+        function toggleEnvelope() {
+            const envelope = document.getElementById('envelope');
+            envelope.classList.toggle('open');
+            
+            // Add some sparkles when opening
+            if(envelope.classList.contains('open')) {
+                createSparkles();
+            }
+        }
+
+        function createSparkles() {
+            const container = document.body;
+            for(let i = 0; i < 20; i++) {
+                const sparkle = document.createElement('div');
+                sparkle.classList.add('sparkle');
+                
+                // Random positioning around the center
+                const x = window.innerWidth / 2 + (Math.random() - 0.5) * 400;
+                const y = window.innerHeight / 2 + (Math.random() - 0.5) * 400;
+                
+                sparkle.style.left = x + 'px';
+                sparkle.style.top = y + 'px';
+                sparkle.style.width = Math.random() * 5 + 2 + 'px';
+                sparkle.style.height = sparkle.style.width;
+                sparkle.style.animationDelay = Math.random() * 1 + 's';
+                
+                container.appendChild(sparkle);
+                
+                // Remove after animation
+                setTimeout(() => {
+                    sparkle.remove();
+                }, 1500);
+            }
+        }
+    </script>
+
+</body>
+</html>
